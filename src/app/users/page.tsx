@@ -18,8 +18,6 @@ import {
   Select,
   MenuItem,
   Avatar,
-  Card,
-  CardContent,
   CircularProgress,
   InputAdornment,
   FormHelperText,
@@ -380,44 +378,6 @@ export default function UsersPage() {
     </Box>
   );
 
-  const mobileCardRender = (row: User, actions?: React.ReactNode) => (
-    <Card variant="outlined">
-      <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>
-              {row.username.charAt(0).toUpperCase()}
-            </Avatar>
-            <Box>
-              <Typography variant="subtitle1" fontWeight={600}>
-                {row.username}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {row.email}
-              </Typography>
-            </Box>
-          </Box>
-          <Chip
-            label={row.role}
-            size="small"
-            color={getRoleColor(row.role) as 'error' | 'primary' | 'default'}
-            sx={{ textTransform: 'capitalize' }}
-          />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Typography variant="caption" color="text.secondary">
-            Status: <Chip label={row.status} size="small" color={getStatusColor(row.status) as 'success' | 'warning' | 'error' | 'default'} sx={{ ml: 0.5 }} />
-          </Typography>
-        </Box>
-        {actions && (
-          <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            {actions}
-          </Box>
-        )}
-      </CardContent>
-    </Card>
-  );
-
   return (
     <Box>
       {/* Page Header */}
@@ -450,7 +410,7 @@ export default function UsersPage() {
         getRowId={(row) => row.id}
         actions={renderActions}
         emptyMessage="No users found"
-        mobileCardRender={mobileCardRender}
+        stickyFirstColumn
       />
 
       {/* Create User Dialog */}

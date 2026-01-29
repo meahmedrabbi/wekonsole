@@ -19,13 +19,9 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  Card,
-  CardContent,
-  Stack,
-  Chip,
   LinearProgress,
 } from '@mui/material';
-import { Search, Refresh, FilterList } from '@mui/icons-material';
+import { Search, Refresh } from '@mui/icons-material';
 import { TableSkeleton } from './LoadingSkeleton';
 
 export interface Column<T> {
@@ -35,8 +31,10 @@ export interface Column<T> {
   align?: 'left' | 'center' | 'right';
   format?: (value: unknown, row: T) => ReactNode;
   sortable?: boolean;
-  mobileShow?: boolean; // Show in mobile card view
-  mobileLabel?: string; // Label for mobile view
+  /** @deprecated No longer used - tables are always shown with all columns */
+  mobileShow?: boolean;
+  /** @deprecated No longer used - tables are always shown with all columns */
+  mobileLabel?: string;
 }
 
 interface DataTableProps<T> {
@@ -50,7 +48,12 @@ interface DataTableProps<T> {
   actions?: (row: T) => ReactNode;
   emptyMessage?: string;
   rowsPerPageOptions?: number[];
+  /** @deprecated No longer used - proper tables are always shown */
   mobileCardRender?: (row: T, actions?: ReactNode) => ReactNode;
+  /** Enable compact mode for smaller screens */
+  compact?: boolean;
+  /** Enable sticky first column */
+  stickyFirstColumn?: boolean;
 }
 
 type Order = 'asc' | 'desc';
@@ -81,7 +84,8 @@ export default function DataTable<T extends object>({
   actions,
   emptyMessage = 'No data available',
   rowsPerPageOptions = [10, 25, 50],
-  mobileCardRender,
+  compact = false,
+  stickyFirstColumn = false,
 }: DataTableProps<T>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -132,114 +136,35 @@ export default function DataTable<T extends object>({
     return sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [sortedData, page, rowsPerPage]);
 
-  // Mobile card view
-  if (isMobile) {
-    return (
-      <Box>
-        {/* Header */}
-        <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {title && (
-            <Typography variant="h6" fontWeight={600}>
-              {title}
-            </Typography>
-          )}
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              fullWidth
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }
-              }}
-            />
-            {onRefresh && (
-              <IconButton onClick={onRefresh} disabled={loading}>
-                <Refresh />
-              </IconButton>
-            )}
-          </Box>
-        </Box>
+  // Compact cell padding for mobile
+  const cellSx = {
+    px: isMobile || compact ? 1 : 2,
+    py: isMobile || compact ? 0.75 : 1,
+    fontSize: isMobile || compact ? '0.8125rem' : 'inherit',
+  };
 
-        {/* Loading */}
-        {loading && <LinearProgress sx={{ mb: 2 }} />}
+  // Build cell styles with optional minWidth and sticky positioning
+  const getCellSx = (column: Column<T>, isHeader: boolean, isFirstColumn: boolean) => {
+    const baseSx = {
+      ...cellSx,
+      ...(column.minWidth ? { minWidth: column.minWidth } : {}),
+      ...(isHeader ? { fontWeight: 600, whiteSpace: 'nowrap' as const } : {}),
+    };
+    
+    if (isFirstColumn && stickyFirstColumn) {
+      return {
+        ...baseSx,
+        position: 'sticky' as const,
+        left: 0,
+        zIndex: isHeader ? 3 : 1,
+        backgroundColor: isHeader ? theme.palette.background.default : theme.palette.background.paper,
+        borderRight: `1px solid ${theme.palette.divider}`,
+      };
+    }
+    
+    return baseSx;
+  };
 
-        {/* Cards */}
-        <Stack spacing={2}>
-          {paginatedData.length === 0 ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="text.secondary">{emptyMessage}</Typography>
-            </Paper>
-          ) : (
-            paginatedData.map((row) => {
-              if (mobileCardRender) {
-                return (
-                  <Box key={getRowId(row)}>
-                    {mobileCardRender(row, actions ? actions(row) : undefined)}
-                  </Box>
-                );
-              }
-              
-              return (
-                <Card key={getRowId(row)} variant="outlined">
-                  <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-                    {columns
-                      .filter((col) => col.mobileShow !== false)
-                      .map((column) => (
-                        <Box
-                          key={String(column.id)}
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            py: 0.5,
-                          }}
-                        >
-                          <Typography variant="body2" color="text.secondary">
-                            {column.mobileLabel || column.label}
-                          </Typography>
-                          <Typography variant="body2" fontWeight={500}>
-                            {column.format
-                              ? column.format(row[column.id as keyof T], row)
-                              : String(row[column.id as keyof T] ?? '-')}
-                          </Typography>
-                        </Box>
-                      ))}
-                    {actions && (
-                      <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                        {actions(row)}
-                      </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </Stack>
-
-        {/* Pagination */}
-        <TablePagination
-          component="div"
-          count={filteredData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={rowsPerPageOptions}
-          sx={{ mt: 2 }}
-        />
-      </Box>
-    );
-  }
-
-  // Desktop table view
   return (
     <Box>
       {/* Header */}
@@ -250,21 +175,21 @@ export default function DataTable<T extends object>({
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 2,
+          gap: 1,
         }}
       >
         {title && (
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={600}>
             {title}
           </Typography>
         )}
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flex: isMobile ? 1 : 'none' }}>
           <TextField
             size="small"
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ minWidth: 250 }}
+            sx={{ minWidth: isMobile ? 'auto' : 250, flex: isMobile ? 1 : 'none' }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -277,7 +202,7 @@ export default function DataTable<T extends object>({
           />
           {onRefresh && (
             <Tooltip title="Refresh">
-              <IconButton onClick={onRefresh} disabled={loading}>
+              <IconButton onClick={onRefresh} disabled={loading} size={isMobile ? 'small' : 'medium'}>
                 <Refresh />
               </IconButton>
             </Tooltip>
@@ -285,17 +210,27 @@ export default function DataTable<T extends object>({
         </Box>
       </Box>
 
-      {/* Table */}
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+      {/* Table - ALWAYS proper column/row based table */}
+      <TableContainer 
+        component={Paper} 
+        variant="outlined" 
+        sx={{ 
+          borderRadius: 2,
+          // Enable horizontal scrolling on mobile
+          overflowX: 'auto',
+          // Smooth scrolling
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
         {loading && <LinearProgress />}
-        <Table>
+        <Table size={isMobile || compact ? 'small' : 'medium'} sx={{ minWidth: isMobile ? 600 : 'auto' }}>
           <TableHead>
-            <TableRow>
-              {columns.map((column) => (
+            <TableRow sx={{ backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}>
+              {columns.map((column, index) => (
                 <TableCell
                   key={String(column.id)}
                   align={column.align}
-                  sx={{ minWidth: column.minWidth, fontWeight: 600 }}
+                  sx={getCellSx(column, true, index === 0)}
                 >
                   {column.sortable !== false ? (
                     <TableSortLabel
@@ -310,7 +245,18 @@ export default function DataTable<T extends object>({
                   )}
                 </TableCell>
               ))}
-              {actions && <TableCell align="right">Actions</TableCell>}
+              {actions && (
+                <TableCell 
+                  align="right" 
+                  sx={{
+                    ...cellSx,
+                    fontWeight: 600, 
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Actions
+                </TableCell>
+              )}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -328,15 +274,24 @@ export default function DataTable<T extends object>({
             ) : (
               paginatedData.map((row) => (
                 <TableRow hover key={getRowId(row)}>
-                  {columns.map((column) => (
-                    <TableCell key={String(column.id)} align={column.align}>
+                  {columns.map((column, index) => (
+                    <TableCell 
+                      key={String(column.id)} 
+                      align={column.align}
+                      sx={getCellSx(column, false, index === 0)}
+                    >
                       {column.format
                         ? column.format(row[column.id as keyof T], row)
                         : String(row[column.id as keyof T] ?? '-')}
                     </TableCell>
                   ))}
                   {actions && (
-                    <TableCell align="right">{actions(row)}</TableCell>
+                    <TableCell 
+                      align="right"
+                      sx={cellSx}
+                    >
+                      {actions(row)}
+                    </TableCell>
                   )}
                 </TableRow>
               ))
@@ -351,6 +306,16 @@ export default function DataTable<T extends object>({
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={rowsPerPageOptions}
+          labelRowsPerPage={isMobile ? 'Rows:' : 'Rows per page:'}
+          sx={{
+            '& .MuiTablePagination-toolbar': {
+              flexWrap: 'wrap',
+              justifyContent: isMobile ? 'center' : 'flex-end',
+            },
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              fontSize: isMobile ? '0.75rem' : undefined,
+            },
+          }}
         />
       </TableContainer>
     </Box>
