@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "@/components/providers";
+import { ThemeProvider, ToastProvider } from "@/components/providers";
 import { DashboardLayout } from "@/components/layout";
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
@@ -38,9 +38,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-inter antialiased">
         <ThemeProvider>
-          <DashboardLayout>
-            {children}
-          </DashboardLayout>
+          <ToastProvider>
+            <DashboardLayout>
+              {children}
+            </DashboardLayout>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
