@@ -16,7 +16,7 @@ export default function Logo({ collapsed = false }: LogoProps) {
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
-        py: 1,
+        py: 0.5,
       }}
     >
       <Box
@@ -24,43 +24,25 @@ export default function Logo({ collapsed = false }: LogoProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 40,
-          height: 40,
-          borderRadius: 2,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          boxShadow: `0 4px 14px ${theme.palette.primary.main}40`,
+          width: 36,
+          height: 36,
+          borderRadius: 1.5,
+          bgcolor: 'primary.main',
         }}
       >
-        <TerminalIcon sx={{ color: 'white', fontSize: 24 }} />
+        <TerminalIcon sx={{ color: 'white', fontSize: 20 }} />
       </Box>
       {!collapsed && (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 700,
-              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              color: 'transparent',
-              letterSpacing: '-0.02em',
-              lineHeight: 1,
-            }}
-          >
-            WeKonsole
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: 'text.secondary',
-              fontSize: '0.625rem',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Server Management
-          </Typography>
-        </Box>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            color: 'text.primary',
+            letterSpacing: '-0.01em',
+          }}
+        >
+          WeKonsole
+        </Typography>
       )}
     </Box>
   );

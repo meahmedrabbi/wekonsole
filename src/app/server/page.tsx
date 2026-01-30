@@ -366,7 +366,7 @@ export default function ServerPage() {
       {/* Page Header */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
+          <Typography variant="h4" fontWeight={700}>
             Server Management
           </Typography>
           <Typography variant="body1" color="text.secondary">

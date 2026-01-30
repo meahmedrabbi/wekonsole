@@ -1,7 +1,7 @@
 'use client';
 
-import { Box, Typography, LinearProgress, useTheme } from '@mui/material';
-import { formatPercentage, getPercentageColor } from '@/lib/utils';
+import { Box, Typography, Stack, useTheme, alpha } from '@mui/material';
+import { TrendingUp, TrendingDown } from '@mui/icons-material';
 
 interface StatCardProps {
   title: string;
@@ -26,120 +26,71 @@ export default function StatCard({
   color = 'primary',
 }: StatCardProps) {
   const theme = useTheme();
-  const progressColor = percentage !== undefined ? getPercentageColor(percentage) : color;
 
   return (
     <Box
       sx={{
-        p: { xs: 2, sm: 2.5 },
+        p: 2.5,
         borderRadius: 3,
         bgcolor: 'background.paper',
         border: `1px solid ${theme.palette.divider}`,
         height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'all 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: theme.palette.mode === 'dark'
-            ? '0 8px 24px rgba(0, 0, 0, 0.4)'
-            : '0 8px 24px rgba(0, 0, 0, 0.08)',
-        },
       }}
     >
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-        <Box>
-          <Typography
-            variant="overline"
-            sx={{
-              color: 'text.secondary',
-              fontSize: '0.7rem',
-              fontWeight: 600,
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              lineHeight: 1.2,
-              mt: 0.5,
-            }}
-          >
+      <Stack spacing={0.5}>
+        <Typography variant="body2" color="text.secondary">
+          {title}
+        </Typography>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant="h4" fontWeight={700}>
             {value}
           </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: { xs: 40, sm: 48 },
-            height: { xs: 40, sm: 48 },
-            borderRadius: 2,
-            bgcolor: `${theme.palette[color].main}15`,
-            color: `${color}.main`,
-          }}
-        >
-          {icon}
-        </Box>
-      </Box>
-
-      {/* Progress bar (if percentage provided) */}
-      {percentage !== undefined && (
-        <Box sx={{ mb: 1.5 }}>
-          <LinearProgress
-            variant="determinate"
-            value={percentage}
-            color={progressColor}
+          <Box
             sx={{
-              height: 6,
-              borderRadius: 1,
-              bgcolor: theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.08)'
-                : 'rgba(0, 0, 0, 0.08)',
-            }}
-          />
-        </Box>
-      )}
-
-      {/* Footer */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto' }}>
-        {percentage !== undefined && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: `${progressColor}.main`,
-              fontWeight: 600,
-            }}
-          >
-            {formatPercentage(percentage)}
-          </Typography>
-        )}
-        {subtitle && (
-          <Typography
-            variant="body2"
-            sx={{ color: 'text.secondary' }}
-          >
-            {subtitle}
-          </Typography>
-        )}
-        {trend && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: trend.direction === 'up' ? 'success.main' : 'error.main',
-              fontWeight: 600,
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
+              width: 40,
+              height: 40,
+              borderRadius: 1.5,
+              bgcolor: alpha(theme.palette[color].main, 0.1),
+              color: `${color}.main`,
             }}
           >
-            {trend.direction === 'up' ? '↑' : '↓'} {trend.value}%
-          </Typography>
-        )}
-      </Box>
+            {icon}
+          </Box>
+        </Stack>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          {trend && (
+            <Stack direction="row" alignItems="center" spacing={0.25}>
+              {trend.direction === 'up' ? (
+                <TrendingUp sx={{ fontSize: 16, color: 'success.main' }} />
+              ) : (
+                <TrendingDown sx={{ fontSize: 16, color: 'error.main' }} />
+              )}
+              <Typography
+                variant="caption"
+                sx={{
+                  color: trend.direction === 'up' ? 'success.main' : 'error.main',
+                  fontWeight: 600,
+                }}
+              >
+                {trend.value}%
+              </Typography>
+            </Stack>
+          )}
+          {percentage !== undefined && (
+            <Typography variant="caption" color="text.secondary">
+              {percentage.toFixed(1)}% used
+            </Typography>
+          )}
+          {subtitle && (
+            <Typography variant="caption" color="text.secondary">
+              {subtitle}
+            </Typography>
+          )}
+        </Stack>
+      </Stack>
     </Box>
   );
 }

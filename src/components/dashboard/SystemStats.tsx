@@ -1,69 +1,55 @@
 'use client';
 
-import { Box, Grid, Typography } from '@mui/material';
-import {
-  Memory,
-  Storage,
-  NetworkCheck,
-  Thermostat,
-} from '@mui/icons-material';
-import { StatCard } from '@/components/common';
+import { Grid } from '@mui/material';
+import { Speed, Memory, Storage, Wifi } from '@mui/icons-material';
 import { useServerStore } from '@/store';
-import { formatPercentage } from '@/lib/utils';
+import { StatCard } from '@/components/common';
 
 export default function SystemStats() {
-  const { stats } = useServerStore();
+  const { cpuUsage, memoryUsage, diskUsage, networkSpeed } = useServerStore();
 
-  if (!stats) {
-    return null;
-  }
-
-  const statCards = [
+  const stats = [
     {
       title: 'CPU Usage',
-      value: formatPercentage(stats.cpu.usage),
-      subtitle: `${stats.cpu.cores} cores`,
-      icon: <Thermostat />,
-      percentage: stats.cpu.usage,
+      value: `${cpuUsage}%`,
+      icon: <Speed fontSize="small" />,
       color: 'primary' as const,
+      percentage: cpuUsage,
+      trend: { value: 2.5, direction: 'up' as const },
     },
     {
       title: 'Memory',
-      value: `${stats.memory.used.toFixed(1)} GB`,
-      subtitle: `of ${stats.memory.total} GB`,
-      icon: <Memory />,
-      percentage: stats.memory.percentage,
+      value: `${memoryUsage}%`,
+      icon: <Memory fontSize="small" />,
       color: 'secondary' as const,
+      percentage: memoryUsage,
+      trend: { value: 1.2, direction: 'down' as const },
     },
     {
       title: 'Disk Usage',
-      value: `${stats.disk.used} GB`,
-      subtitle: `of ${stats.disk.total} GB`,
-      icon: <Storage />,
-      percentage: stats.disk.percentage,
-      color: 'info' as const,
+      value: `${diskUsage}%`,
+      icon: <Storage fontSize="small" />,
+      color: 'warning' as const,
+      percentage: diskUsage,
+      subtitle: '234 GB / 500 GB',
     },
     {
       title: 'Network',
-      value: `↓ ${stats.network.download.toFixed(1)} MB/s`,
-      subtitle: `↑ ${stats.network.upload.toFixed(1)} MB/s`,
-      icon: <NetworkCheck />,
-      color: 'success' as const,
+      value: `${networkSpeed} MB/s`,
+      icon: <Wifi fontSize="small" />,
+      color: 'info' as const,
+      trend: { value: 15.3, direction: 'up' as const },
+      subtitle: 'Total bandwidth',
     },
   ];
 
   return (
-    <Box>
-      <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-        System Overview
-      </Typography>
-      <Grid container spacing={2}>
-        {statCards.map((card, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6, lg: 3 }}>
-            <StatCard {...card} />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+    <Grid container spacing={2.5}>
+      {stats.map((stat) => (
+        <Grid key={stat.title} size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard {...stat} />
+        </Grid>
+      ))}
+    </Grid>
   );
 }

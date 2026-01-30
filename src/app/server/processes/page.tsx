@@ -308,7 +308,7 @@ export default function ProcessesPage() {
     <Box>
       {/* Page Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
+        <Typography variant="h4" fontWeight={700}>
           Process Management
         </Typography>
         <Typography variant="body1" color="text.secondary">
