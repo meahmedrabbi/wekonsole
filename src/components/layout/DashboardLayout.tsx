@@ -62,9 +62,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Page content */}
         <Box
           sx={{
-            pt: `${headerHeight}px`,
+            pt: { xs: `${MOBILE_HEADER_HEIGHT + 24}px`, md: `${HEADER_HEIGHT + 32}px` },
+            pb: { xs: 2, sm: 3 },
             px: { xs: 2, sm: 3 },
-            py: { xs: 2, sm: 3 },
             minHeight: `calc(100vh - ${headerHeight}px)`,
           }}
         >
