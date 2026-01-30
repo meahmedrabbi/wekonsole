@@ -55,11 +55,11 @@ const designTokens = {
     },
   },
   borderRadius: {
-    xs: 4,
-    sm: 6,
-    md: 8,
-    lg: 12,
-    xl: 16,
+    xs: 2,
+    sm: 4,
+    md: 4,
+    lg: 8,
+    xl: 12,
     full: 9999,
   },
 };
@@ -134,7 +134,7 @@ const getCommonOptions = (): ThemeOptions => ({
     },
   },
   shape: {
-    borderRadius: designTokens.borderRadius.md,
+    borderRadius: 4,
   },
   breakpoints: {
     values: {

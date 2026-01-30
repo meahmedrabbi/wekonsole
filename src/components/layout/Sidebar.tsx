@@ -306,7 +306,7 @@ export default function Sidebar({ open, collapsed, onClose }: SidebarProps) {
           },
           '&::-webkit-scrollbar-thumb': {
             bgcolor: theme.palette.divider,
-            borderRadius: 3,
+            borderRadius: '3px',
           },
         }}
       >

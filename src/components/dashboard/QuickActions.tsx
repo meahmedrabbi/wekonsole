@@ -36,7 +36,7 @@ export default function QuickActions() {
     <Box
       sx={{
         p: 2.5,
-        borderRadius: 3,
+        borderRadius: 2,
         bgcolor: 'background.paper',
         border: `1px solid ${theme.palette.divider}`,
         height: '100%',
@@ -71,7 +71,7 @@ export default function QuickActions() {
                   justifyContent: 'center',
                   width: 36,
                   height: 36,
-                  borderRadius: 1.5,
+                  borderRadius: 1,
                   bgcolor: alpha(theme.palette[action.color].main, 0.1),
                   color: `${action.color}.main`,
                 }}
