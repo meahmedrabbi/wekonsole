@@ -3,120 +3,107 @@
 import {
   Box,
   Typography,
-  Paper,
-  Chip,
   Grid,
+  Stack,
   useTheme,
+  alpha,
 } from '@mui/material';
 import {
-  AccessTime,
   Computer,
-  Memory,
+  Schedule,
+  Cloud,
+  Fingerprint,
 } from '@mui/icons-material';
-import { useServerStore } from '@/store';
 import { formatUptime } from '@/lib/utils';
+
+interface InfoItemProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  color: string;
+}
+
+function InfoItem({ icon, label, value, color }: InfoItemProps) {
+  const theme = useTheme();
+  return (
+    <Stack direction="row" alignItems="center" spacing={2}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 40,
+          height: 40,
+          borderRadius: 1.5,
+          bgcolor: alpha(color, 0.1),
+          color: color,
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </Box>
+      <Box>
+        <Typography variant="body2" color="text.secondary">
+          {label}
+        </Typography>
+        <Typography variant="subtitle1" fontWeight={600}>
+          {value}
+        </Typography>
+      </Box>
+    </Stack>
+  );
+}
 
 export default function ServerInfo() {
   const theme = useTheme();
-  const { stats } = useServerStore();
 
-  if (!stats) {
-    return null;
-  }
-
-  const infoItems = [
+  const serverData = [
     {
+      icon: <Computer fontSize="small" />,
       label: 'Hostname',
-      value: stats.hostname,
-      icon: <Computer />,
+      value: 'wekonsole-server',
+      color: theme.palette.primary.main,
     },
     {
+      icon: <Cloud fontSize="small" />,
       label: 'Operating System',
-      value: stats.os,
-      icon: <Memory />,
+      value: 'Ubuntu 24.04 LTS',
+      color: theme.palette.info.main,
     },
     {
+      icon: <Fingerprint fontSize="small" />,
       label: 'Kernel',
-      value: stats.kernel,
-      icon: <Memory />,
+      value: '6.5.0-35-generic',
+      color: theme.palette.secondary.main,
     },
     {
+      icon: <Schedule fontSize="small" />,
       label: 'Uptime',
-      value: formatUptime(stats.uptime),
-      icon: <AccessTime />,
+      value: formatUptime(1234567),
+      color: theme.palette.success.main,
     },
   ];
 
   return (
-    <Box>
-      <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+    <Box
+      sx={{
+        p: 2.5,
+        borderRadius: 3,
+        bgcolor: 'background.paper',
+        border: `1px solid ${theme.palette.divider}`,
+        height: '100%',
+      }}
+    >
+      <Typography variant="h5" fontWeight={600} sx={{ mb: 2.5 }}>
         Server Information
       </Typography>
-      <Paper variant="outlined" sx={{ borderRadius: 2, p: 2 }}>
-        <Grid container spacing={2}>
-          {infoItems.map((item, index) => (
-            <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 1.5,
-                    bgcolor: theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.05)'
-                      : 'rgba(0, 0, 0, 0.04)',
-                    color: 'text.secondary',
-                  }}
-                >
-                  {item.icon}
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {item.label}
-                  </Typography>
-                  <Typography variant="body2" fontWeight={600}>
-                    {item.value}
-                  </Typography>
-                </Box>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Chip
-              label="Online"
-              size="small"
-              color="success"
-              sx={{ fontWeight: 600 }}
-            />
-            <Chip
-              label={`CPU: ${stats.cpu.model}`}
-              size="small"
-              variant="outlined"
-            />
-            <Chip
-              label={`${stats.cpu.cores} Cores`}
-              size="small"
-              variant="outlined"
-            />
-            <Chip
-              label={`${stats.memory.total} GB RAM`}
-              size="small"
-              variant="outlined"
-            />
-          </Box>
-        </Box>
-      </Paper>
+      <Grid container spacing={3}>
+        {serverData.map((item) => (
+          <Grid key={item.label} size={{ xs: 12, sm: 6 }}>
+            <InfoItem {...item} />
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 }

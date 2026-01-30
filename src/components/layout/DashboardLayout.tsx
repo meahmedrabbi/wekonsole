@@ -1,10 +1,10 @@
 'use client';
 
-import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import { useUIStore } from '@/store';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { HEADER_HEIGHT, MOBILE_HEADER_HEIGHT } from '@/lib/navigation';
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '@/lib/navigation';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,35 +12,30 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const {
-    sidebarOpen,
-    sidebarCollapsed,
-    mobileMenuOpen,
-    toggleSidebar,
-    toggleSidebarCollapse,
-    setMobileMenuOpen,
-    closeMobileMenu,
-  } = useUIStore();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { sidebarCollapsed, mobileMenuOpen, setMobileMenuOpen, closeMobileMenu, toggleSidebarCollapse } = useUIStore();
 
-  const handleMenuClick = () => {
-    if (isMobile) {
-      setMobileMenuOpen(!mobileMenuOpen);
-    } else {
-      toggleSidebar();
-    }
-  };
-
-  const headerHeight = isMobile ? MOBILE_HEADER_HEIGHT : HEADER_HEIGHT;
+  const drawerWidth = sidebarCollapsed ? MINI_DRAWER_WIDTH : DRAWER_WIDTH;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', width: '100%' }}>
+      {/* Header */}
+      <Header
+        onMenuClick={() => {
+          if (isMobile) {
+            setMobileMenuOpen(!mobileMenuOpen);
+          } else {
+            toggleSidebarCollapse();
+          }
+        }}
+        drawerOpen={!sidebarCollapsed}
+      />
+
       {/* Sidebar */}
       <Sidebar
-        open={isMobile ? mobileMenuOpen : sidebarOpen}
-        collapsed={sidebarCollapsed}
+        open={isMobile ? mobileMenuOpen : true}
+        collapsed={isMobile ? false : sidebarCollapsed}
         onClose={closeMobileMenu}
-        onToggleCollapse={toggleSidebarCollapse}
       />
 
       {/* Main content */}
@@ -48,27 +43,38 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         component="main"
         sx={{
           flexGrow: 1,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
           minHeight: '100vh',
           bgcolor: 'background.default',
-          transition: theme.transitions.create(['margin', 'width'], {
+          transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+            duration: theme.transitions.duration.leavingScreen,
           }),
         }}
       >
-        {/* Header */}
-        <Header onMenuClick={handleMenuClick} sidebarCollapsed={sidebarCollapsed} />
-
-        {/* Page content */}
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 60 } }} />
         <Box
           sx={{
-            pt: { xs: `${MOBILE_HEADER_HEIGHT + 24}px`, md: `${HEADER_HEIGHT + 32}px` },
-            pb: { xs: 2, sm: 3 },
-            px: { xs: 2, sm: 3 },
-            minHeight: `calc(100vh - ${headerHeight}px)`,
+            p: { xs: 2, sm: 3 },
+            minHeight: 'calc(100vh - 110px)',
           }}
         >
           {children}
+        </Box>
+
+        {/* Footer */}
+        <Box
+          sx={{
+            py: 2,
+            px: 3,
+            textAlign: 'center',
+            color: 'text.secondary',
+            fontSize: '0.75rem',
+            borderTop: 1,
+            borderColor: 'divider',
+          }}
+        >
+          WeKonsole - Server Management Dashboard
         </Box>
       </Box>
     </Box>

@@ -15,9 +15,12 @@ import {
   useMediaQuery,
   Divider,
   ListItemIcon,
+  alpha,
+  Breadcrumbs,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
+  MenuOpen,
   Notifications,
   DarkMode,
   LightMode,
@@ -26,34 +29,60 @@ import {
   Settings,
   Logout,
   Help,
+  NavigateNext,
 } from '@mui/icons-material';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useThemeStore, useNotificationsStore } from '@/store';
-import { DRAWER_WIDTH, COLLAPSED_DRAWER_WIDTH, HEADER_HEIGHT, MOBILE_HEADER_HEIGHT } from '@/lib/navigation';
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '@/lib/navigation';
 import NotificationsPanel from './NotificationsPanel';
 
 interface HeaderProps {
   onMenuClick: () => void;
-  sidebarCollapsed: boolean;
+  drawerOpen: boolean;
 }
 
-export default function Header({ onMenuClick, sidebarCollapsed }: HeaderProps) {
+function getBreadcrumbs(pathname: string): { label: string; path: string }[] {
+  const parts = pathname.split('/').filter(Boolean);
+  const crumbs: { label: string; path: string }[] = [];
+  
+  const labelMap: Record<string, string> = {
+    server: 'Server',
+    processes: 'Processes',
+    files: 'File Manager',
+    network: 'Network',
+    logs: 'Logs',
+    databases: 'Databases',
+    backups: 'Backups',
+    security: 'Security',
+    users: 'Users',
+    settings: 'Settings',
+  };
+
+  parts.forEach((part, index) => {
+    const path = '/' + parts.slice(0, index + 1).join('/');
+    crumbs.push({
+      label: labelMap[part] || part.charAt(0).toUpperCase() + part.slice(1),
+      path,
+    });
+  });
+
+  return crumbs;
+}
+
+export default function Header({ onMenuClick, drawerOpen }: HeaderProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const pathname = usePathname();
   const { mode, toggleTheme } = useThemeStore();
   const { unreadCount } = useNotificationsStore();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const breadcrumbs = getBreadcrumbs(pathname);
 
-  const handleProfileMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const drawerWidth = isMobile ? 0 : (sidebarCollapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH);
+  const drawerWidth = isMobile ? 0 : (drawerOpen ? DRAWER_WIDTH : MINI_DRAWER_WIDTH);
 
   return (
     <>
@@ -61,87 +90,97 @@ export default function Header({ onMenuClick, sidebarCollapsed }: HeaderProps) {
         position="fixed"
         elevation={0}
         sx={{
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
-          bgcolor: 'background.paper',
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { sm: `${drawerWidth}px` },
           transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+            duration: theme.transitions.duration.leavingScreen,
           }),
+          zIndex: theme.zIndex.drawer + 1,
         }}
       >
-        <Toolbar
-          sx={{
-            minHeight: { xs: MOBILE_HEADER_HEIGHT, md: HEADER_HEIGHT },
-            px: { xs: 2, sm: 3 },
-          }}
-        >
-          {/* Mobile menu button */}
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              aria-label="open menu"
-              edge="start"
-              onClick={onMenuClick}
-              sx={{ mr: 2, color: 'text.primary' }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-
-          {/* Search */}
-          <Box
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 60 }, px: { xs: 2, sm: 3 } }}>
+          {/* Menu toggle */}
+          <IconButton
+            aria-label="toggle drawer"
+            onClick={onMenuClick}
+            edge="start"
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              flex: 1,
-              maxWidth: { xs: '100%', sm: 400 },
-              mr: 2,
+              color: 'text.primary',
+              mr: 1,
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                px: 2,
-                py: 1,
-                borderRadius: 2,
-                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                width: '100%',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                },
-              }}
+            {isMobile || !drawerOpen ? <MenuIcon /> : <MenuOpen />}
+          </IconButton>
+
+          {/* Breadcrumbs */}
+          <Box sx={{ flex: 1, display: { xs: 'none', sm: 'block' } }}>
+            <Breadcrumbs
+              separator={<NavigateNext sx={{ fontSize: 16, color: 'text.secondary' }} />}
+              sx={{ '& .MuiBreadcrumbs-ol': { flexWrap: 'nowrap' } }}
             >
-              <Search sx={{ color: 'text.secondary', fontSize: 20, mr: 1 }} />
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Search...
+              <Typography
+                component={Link}
+                href="/"
+                variant="body2"
+                sx={{
+                  color: breadcrumbs.length === 0 ? 'text.primary' : 'text.secondary',
+                  fontWeight: breadcrumbs.length === 0 ? 600 : 400,
+                  textDecoration: 'none',
+                  '&:hover': { color: 'primary.main' },
+                }}
+              >
+                Dashboard
               </Typography>
-              <Box sx={{ ml: 'auto', display: { xs: 'none', sm: 'flex' }, gap: 0.5 }}>
-                <Box
-                  sx={{
-                    px: 0.75,
-                    py: 0.25,
-                    borderRadius: 1,
-                    bgcolor: theme.palette.divider,
-                    fontSize: '0.7rem',
-                    fontWeight: 500,
-                  }}
-                >
-                  ⌘K
-                </Box>
-              </Box>
-            </Box>
+              {breadcrumbs.map((crumb, index) => {
+                const isLast = index === breadcrumbs.length - 1;
+                return isLast ? (
+                  <Typography
+                    key={crumb.path}
+                    variant="body2"
+                    sx={{ color: 'text.primary', fontWeight: 600 }}
+                  >
+                    {crumb.label}
+                  </Typography>
+                ) : (
+                  <Typography
+                    key={crumb.path}
+                    component={Link}
+                    href={crumb.path}
+                    variant="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      textDecoration: 'none',
+                      '&:hover': { color: 'primary.main' },
+                    }}
+                  >
+                    {crumb.label}
+                  </Typography>
+                );
+              })}
+            </Breadcrumbs>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Mobile title */}
+          <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }}>
+            <Typography variant="subtitle1" fontWeight={600} color="text.primary" noWrap>
+              {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : 'Dashboard'}
+            </Typography>
+          </Box>
+
+          {/* Right actions */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {/* Search */}
+            <Tooltip title="Search">
+              <IconButton sx={{ color: 'text.secondary' }}>
+                <Search />
+              </IconButton>
+            </Tooltip>
+
             {/* Theme toggle */}
             <Tooltip title={mode === 'dark' ? 'Light mode' : 'Dark mode'}>
-              <IconButton onClick={toggleTheme} sx={{ color: 'text.primary' }}>
-                {mode === 'dark' ? <LightMode /> : <DarkMode />}
+              <IconButton onClick={toggleTheme} sx={{ color: 'text.secondary' }}>
+                {mode === 'dark' ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
               </IconButton>
             </Tooltip>
 
@@ -149,30 +188,34 @@ export default function Header({ onMenuClick, sidebarCollapsed }: HeaderProps) {
             <Tooltip title="Notifications">
               <IconButton
                 onClick={() => setNotificationsPanelOpen(true)}
-                sx={{ color: 'text.primary' }}
+                sx={{ color: 'text.secondary' }}
               >
-                <Badge badgeContent={unreadCount} color="error">
-                  <Notifications />
+                <Badge
+                  badgeContent={unreadCount}
+                  color="error"
+                  variant="dot"
+                  invisible={unreadCount === 0}
+                >
+                  <Notifications fontSize="small" />
                 </Badge>
               </IconButton>
             </Tooltip>
 
             {/* Profile */}
-            <Tooltip title="Account">
+            <Tooltip title="Profile">
               <IconButton
-                onClick={handleProfileMenuOpen}
-                sx={{ p: 0.5 }}
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                sx={{ p: 0.5, ml: 0.5 }}
               >
                 <Avatar
                   sx={{
-                    width: 36,
-                    height: 36,
+                    width: 32,
+                    height: 32,
                     bgcolor: 'primary.main',
-                    fontSize: '0.875rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                   }}
                 >
-                  {/* TODO: Replace with dynamic user initials from auth state */}
                   AD
                 </Avatar>
               </IconButton>
@@ -185,24 +228,26 @@ export default function Header({ onMenuClick, sidebarCollapsed }: HeaderProps) {
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
-        onClose={handleProfileMenuClose}
-        onClick={handleProfileMenuClose}
+        onClose={() => setAnchorEl(null)}
+        onClick={() => setAnchorEl(null)}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            minWidth: 200,
-            borderRadius: 2,
-            boxShadow: theme.palette.mode === 'dark'
-              ? '0 8px 32px rgba(0, 0, 0, 0.4)'
-              : '0 8px 32px rgba(0, 0, 0, 0.1)',
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 1,
+              minWidth: 200,
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: theme.palette.mode === 'dark'
+                ? '0 4px 24px rgba(0, 0, 0, 0.4)'
+                : '0 4px 24px rgba(0, 0, 0, 0.08)',
+            },
           },
         }}
       >
-        {/* TODO: Replace with dynamic user data from auth state */}
         <Box sx={{ px: 2, py: 1.5 }}>
-          <Typography variant="subtitle2" fontWeight={600}>
+          <Typography variant="subtitle1" fontWeight={600}>
             Admin User
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -211,28 +256,20 @@ export default function Header({ onMenuClick, sidebarCollapsed }: HeaderProps) {
         </Box>
         <Divider />
         <MenuItem>
-          <ListItemIcon>
-            <Person fontSize="small" />
-          </ListItemIcon>
+          <ListItemIcon><Person fontSize="small" /></ListItemIcon>
           Profile
         </MenuItem>
         <MenuItem>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
+          <ListItemIcon><Settings fontSize="small" /></ListItemIcon>
           Settings
         </MenuItem>
         <MenuItem>
-          <ListItemIcon>
-            <Help fontSize="small" />
-          </ListItemIcon>
+          <ListItemIcon><Help fontSize="small" /></ListItemIcon>
           Help
         </MenuItem>
         <Divider />
         <MenuItem sx={{ color: 'error.main' }}>
-          <ListItemIcon>
-            <Logout fontSize="small" color="error" />
-          </ListItemIcon>
+          <ListItemIcon><Logout fontSize="small" color="error" /></ListItemIcon>
           Logout
         </MenuItem>
       </Menu>

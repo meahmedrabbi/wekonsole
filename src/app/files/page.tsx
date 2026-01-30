@@ -630,7 +630,7 @@ export default function FilesPage() {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
       {/* Header */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>File Manager</Typography>
+        <Typography variant="h4" fontWeight={700}>File Manager</Typography>
         <Typography variant="body2" color="text.secondary">Browse and manage server files</Typography>
       </Box>
 

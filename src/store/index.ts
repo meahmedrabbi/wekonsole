@@ -79,6 +79,10 @@ export interface ServerStats {
 
 interface ServerState {
   stats: ServerStats | null;
+  cpuUsage: number;
+  memoryUsage: number;
+  diskUsage: number;
+  networkSpeed: number;
   isLoading: boolean;
   error: string | null;
   setStats: (stats: ServerStats) => void;
@@ -121,9 +125,20 @@ const mockStats: ServerStats = {
 
 export const useServerStore = create<ServerState>((set) => ({
   stats: mockStats,
+  cpuUsage: mockStats.cpu.usage,
+  memoryUsage: mockStats.memory.percentage,
+  diskUsage: mockStats.disk.percentage,
+  networkSpeed: mockStats.network.download,
   isLoading: false,
   error: null,
-  setStats: (stats) => set({ stats, error: null }),
+  setStats: (stats) => set({
+    stats,
+    cpuUsage: stats.cpu.usage,
+    memoryUsage: stats.memory.percentage,
+    diskUsage: stats.disk.percentage,
+    networkSpeed: stats.network.download,
+    error: null,
+  }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 }));

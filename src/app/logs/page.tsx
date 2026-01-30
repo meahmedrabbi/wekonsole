@@ -208,7 +208,7 @@ export default function LogsPage() {
     <Box>
       {/* Page Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
+        <Typography variant="h4" fontWeight={700}>
           System Logs
         </Typography>
         <Typography variant="body1" color="text.secondary">

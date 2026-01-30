@@ -1,40 +1,43 @@
 'use client';
 
-import { Box, Typography, Stack } from '@mui/material';
-import {
-  SystemStats,
-  ServicesStatus,
-  QuickActions,
-  ServerInfo,
-} from '@/components/dashboard';
+import { Box, Typography, Grid } from '@mui/material';
+import { SystemStats, ServerInfo, ServicesStatus, QuickActions } from '@/components/dashboard';
 
 export default function DashboardPage() {
   return (
     <Box>
-      {/* Page header */}
+      {/* Page Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
+        <Typography variant="h4" fontWeight={700}>
           Dashboard
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Monitor and manage your server in real-time
+          Monitor your server performance and manage resources
         </Typography>
       </Box>
 
-      {/* Dashboard content */}
-      <Stack spacing={4}>
-        {/* System stats cards */}
+      {/* Stats Row */}
+      <Box sx={{ mb: 3 }}>
         <SystemStats />
+      </Box>
 
-        {/* Server information */}
-        <ServerInfo />
+      {/* Content Grid */}
+      <Grid container spacing={3}>
+        {/* Server Info */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ServerInfo />
+        </Grid>
 
-        {/* Quick actions */}
-        <QuickActions />
+        {/* Quick Actions */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <QuickActions />
+        </Grid>
 
-        {/* Services table */}
-        <ServicesStatus />
-      </Stack>
+        {/* Services Status */}
+        <Grid size={{ xs: 12 }}>
+          <ServicesStatus />
+        </Grid>
+      </Grid>
     </Box>
   );
 }

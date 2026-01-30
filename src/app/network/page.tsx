@@ -337,7 +337,7 @@ export default function NetworkPage() {
     <Box>
       {/* Page Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
+        <Typography variant="h4" fontWeight={700}>
           Network & Ports
         </Typography>
         <Typography variant="body1" color="text.secondary">
