@@ -26,7 +26,7 @@ export default function Logo({ collapsed = false }: LogoProps) {
           justifyContent: 'center',
           width: 36,
           height: 36,
-          borderRadius: 1.5,
+          borderRadius: 1,
           bgcolor: 'primary.main',
         }}
       >

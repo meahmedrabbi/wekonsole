@@ -44,7 +44,7 @@ export default function ServicesStatus() {
     <Box
       sx={{
         p: 2.5,
-        borderRadius: 3,
+        borderRadius: 2,
         bgcolor: 'background.paper',
         border: `1px solid ${theme.palette.divider}`,
         height: '100%',
@@ -62,7 +62,7 @@ export default function ServicesStatus() {
             px: 1.5,
             borderBottom: `1px solid ${theme.palette.divider}`,
             bgcolor: alpha(theme.palette.grey[500], 0.04),
-            borderRadius: '8px 8px 0 0',
+            borderRadius: '4px 4px 0 0',
           }}
         >
           <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ flex: 2 }}>SERVICE</Typography>

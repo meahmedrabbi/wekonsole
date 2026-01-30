@@ -28,7 +28,7 @@ export default function PlaceholderPage({ title, description }: PlaceholderPageP
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-          borderRadius: 3,
+          borderRadius: 2,
           border: `1px dashed ${theme.palette.divider}`,
           bgcolor: alpha(theme.palette.primary.main, 0.02),
         }}
@@ -40,7 +40,7 @@ export default function PlaceholderPage({ title, description }: PlaceholderPageP
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 3,
+            borderRadius: 2,
             bgcolor: alpha(theme.palette.primary.main, 0.08),
             color: 'primary.main',
             mb: 2,

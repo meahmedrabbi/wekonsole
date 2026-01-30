@@ -61,7 +61,7 @@ type Order = 'asc' | 'desc';
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   const aVal = a[orderBy];
   const bVal = b[orderBy];
-  
+
   if (bVal < aVal) return -1;
   if (bVal > aVal) return 1;
   return 0;
@@ -89,12 +89,15 @@ export default function DataTable<T extends object>({
 }: DataTableProps<T>) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof T | ''>('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // On mobile, always pin the first column
+  const pinFirstColumn = isMobile || stickyFirstColumn;
 
   const handleRequestSort = (property: keyof T) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -114,7 +117,7 @@ export default function DataTable<T extends object>({
   // Filter data based on search
   const filteredData = useMemo(() => {
     if (!searchQuery) return data;
-    
+
     const query = searchQuery.toLowerCase();
     return data.filter((row) => {
       return columns.some((column) => {
@@ -141,6 +144,7 @@ export default function DataTable<T extends object>({
     px: isMobile || compact ? 1 : 2,
     py: isMobile || compact ? 0.75 : 1,
     fontSize: isMobile || compact ? '0.8125rem' : 'inherit',
+    whiteSpace: 'nowrap' as const,
   };
 
   // Calculate minimum table width dynamically from column definitions
@@ -155,20 +159,24 @@ export default function DataTable<T extends object>({
     const baseSx = {
       ...cellSx,
       ...(column.minWidth ? { minWidth: column.minWidth } : {}),
-      ...(isHeader ? { fontWeight: 600, whiteSpace: 'nowrap' as const } : {}),
+      ...(isHeader ? { fontWeight: 600 } : {}),
     };
-    
-    if (isFirstColumn && stickyFirstColumn) {
+
+    if (isFirstColumn && pinFirstColumn) {
       return {
         ...baseSx,
         position: 'sticky' as const,
         left: 0,
-        zIndex: isHeader ? 3 : 1,
-        backgroundColor: isHeader ? theme.palette.background.default : theme.palette.background.paper,
+        zIndex: isHeader ? 4 : 2,
+        backgroundColor: isHeader
+          ? (theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.grey[50])
+          : theme.palette.background.paper,
         borderRight: `1px solid ${theme.palette.divider}`,
+        // Drop shadow to indicate pinned column
+        boxShadow: '2px 0 4px -2px rgba(0,0,0,0.1)',
       };
     }
-    
+
     return baseSx;
   };
 
@@ -217,21 +225,24 @@ export default function DataTable<T extends object>({
         </Box>
       </Box>
 
-      {/* Table - ALWAYS proper column/row based table */}
+      {/* Table */}
       <TableContainer
         component={Paper}
         variant="outlined"
         sx={{
           borderRadius: 2,
-          overflow: 'auto',
+          overflowX: 'auto',
+          overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          ...(isMobile && {
-            maxHeight: '70vh',
-          }),
+          maxHeight: isMobile ? '65vh' : 'none',
         }}
       >
         {loading && <LinearProgress />}
-        <Table stickyHeader={isMobile} size={isMobile || compact ? 'small' : 'medium'} sx={{ minWidth: tableMinWidth }}>
+        <Table
+          stickyHeader
+          size={isMobile || compact ? 'small' : 'medium'}
+          sx={{ minWidth: tableMinWidth }}
+        >
           <TableHead>
             <TableRow sx={{
               '& th': {
@@ -260,12 +271,11 @@ export default function DataTable<T extends object>({
                 </TableCell>
               ))}
               {actions && (
-                <TableCell 
-                  align="right" 
+                <TableCell
+                  align="right"
                   sx={{
                     ...cellSx,
-                    fontWeight: 600, 
-                    whiteSpace: 'nowrap',
+                    fontWeight: 600,
                   }}
                 >
                   Actions
@@ -289,8 +299,8 @@ export default function DataTable<T extends object>({
               paginatedData.map((row) => (
                 <TableRow hover key={getRowId(row)}>
                   {columns.map((column, index) => (
-                    <TableCell 
-                      key={String(column.id)} 
+                    <TableCell
+                      key={String(column.id)}
                       align={column.align}
                       sx={getCellSx(column, false, index === 0)}
                     >
@@ -300,7 +310,7 @@ export default function DataTable<T extends object>({
                     </TableCell>
                   ))}
                   {actions && (
-                    <TableCell 
+                    <TableCell
                       align="right"
                       sx={cellSx}
                     >
@@ -322,9 +332,11 @@ export default function DataTable<T extends object>({
           rowsPerPageOptions={rowsPerPageOptions}
           labelRowsPerPage={isMobile ? 'Rows:' : 'Rows per page:'}
           sx={{
+            borderTop: `1px solid ${theme.palette.divider}`,
             '& .MuiTablePagination-toolbar': {
               flexWrap: 'wrap',
               justifyContent: isMobile ? 'center' : 'flex-end',
+              minHeight: isMobile ? 48 : 52,
             },
             '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
               fontSize: isMobile ? '0.75rem' : undefined,
