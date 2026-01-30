@@ -143,6 +143,13 @@ export default function DataTable<T extends object>({
     fontSize: isMobile || compact ? '0.8125rem' : 'inherit',
   };
 
+  // Calculate minimum table width dynamically from column definitions
+  const tableMinWidth = useMemo(() => {
+    const columnsWidth = columns.reduce((sum, col) => sum + (col.minWidth || 100), 0);
+    const actionsWidth = actions ? 120 : 0;
+    return columnsWidth + actionsWidth;
+  }, [columns, actions]);
+
   // Build cell styles with optional minWidth and sticky positioning
   const getCellSx = (column: Column<T>, isHeader: boolean, isFirstColumn: boolean) => {
     const baseSx = {
@@ -211,21 +218,28 @@ export default function DataTable<T extends object>({
       </Box>
 
       {/* Table - ALWAYS proper column/row based table */}
-      <TableContainer 
-        component={Paper} 
-        variant="outlined" 
-        sx={{ 
+      <TableContainer
+        component={Paper}
+        variant="outlined"
+        sx={{
           borderRadius: 2,
-          // Enable horizontal scrolling on mobile
-          overflowX: 'auto',
-          // Smooth scrolling
+          overflow: 'auto',
           WebkitOverflowScrolling: 'touch',
+          ...(isMobile && {
+            maxHeight: '70vh',
+          }),
         }}
       >
         {loading && <LinearProgress />}
-        <Table size={isMobile || compact ? 'small' : 'medium'} sx={{ minWidth: isMobile ? 600 : 'auto' }}>
+        <Table stickyHeader={isMobile} size={isMobile || compact ? 'small' : 'medium'} sx={{ minWidth: tableMinWidth }}>
           <TableHead>
-            <TableRow sx={{ backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}>
+            <TableRow sx={{
+              '& th': {
+                backgroundColor: theme.palette.mode === 'dark'
+                  ? theme.palette.background.paper
+                  : theme.palette.grey[50],
+              },
+            }}>
               {columns.map((column, index) => (
                 <TableCell
                   key={String(column.id)}
